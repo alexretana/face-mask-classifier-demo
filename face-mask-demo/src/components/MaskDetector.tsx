@@ -66,7 +66,6 @@ export default function MaskDetector() {
           return;   
         }
         // Crop face from video frame
-        ctx.drawImage(video, 0, 0, c.width, c.height)
         const faceImage = ctx.getImageData(xMin, yMin, width, height);
 
         const tensor =  tf.tidy(() =>
