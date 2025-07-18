@@ -79,15 +79,31 @@ export default function MaskDetector() {
         // Predict
         const prediction = maskModel()!.predict(tensor) as tf.Tensor;
         const data = await prediction.data();
-        const maskProb = data[0];
+        console.log(data)
 
-        // Add Label
-        ctx.strokeStyle = 'lime';
+        // Detemine Label
+        const [maskProb, noMaskProb] = data;
+        const isMasked = maskProb > noMaskProb;
+        const label = isMasked ? 'Mask' : 'No Mask';
+        const prob = isMasked ? maskProb : noMaskProb;
+        const color = isMasked ? 'lime' : 'red';
+        const text = `${label}: ${prob.toFixed(2)}`;;
+        const textWidth = ctx.measureText(text).width;
+        const textHeight = 16;
+
+        // Add Box
+        ctx.strokeStyle = color;
         ctx.lineWidth = 2;
         ctx.strokeRect(xMin, yMin, width, height);
-        ctx.fillStyle = 'lime';
+
+        // Add Transparent background box
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(xMin, yMin - textHeight - 6, textWidth + 4, textHeight + 4);
+
+        // Add text
+        ctx.fillStyle = color;
         ctx.font = '16px sans-serif';
-        ctx.fillText(`Mask: ${maskProb.toFixed(2)}`, xMin, yMin - 5);
+        ctx.fillText(text, xMin, yMin - 5);
 
         tensor.dispose();
         prediction.dispose?.();
@@ -101,7 +117,7 @@ export default function MaskDetector() {
   });
 
   return (
-    <div style="position: relative; display: inline-block;">
+    <div style="position: relative; display: inline-block; justify-content: center;">
       <video
         ref={setVideoRef}
         autoplay
@@ -109,7 +125,7 @@ export default function MaskDetector() {
         playsinline
         width="640"
         height="480"
-        style="position: absolute; top: 0; left: 0;"
+        style="top: 0; left: 0;"
       />
       <canvas
         ref={setCanvasRef}
