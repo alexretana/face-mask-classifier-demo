@@ -6,6 +6,7 @@ export default function MaskDetector() {
   const [videoRef, setVideoRef] = createSignal<HTMLVideoElement | null>(null);
   const [canvasRef, setCanvasRef] = createSignal<HTMLCanvasElement | null>(null);
   const [maskModel, setMaskModel] =createSignal<tf.LayersModel | null >(null);
+  const [croppedCanvasRef, setCroppedCanvasRef] = createSignal<HTMLCanvasElement | null>(null);
   let detector: faceLandmarksDetection.FaceLandmarksDetector | null = null;
   let running = true;
 
@@ -65,8 +66,30 @@ export default function MaskDetector() {
           console.log('maskModel missing'); 
           return;   
         }
-        // Crop face from video frame
-        const faceImage = ctx.getImageData(xMin, yMin, width, height);
+        // Create a temp canvas to draw the video frame
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = v.videoWidth
+        tempCanvas.height = v.videoHeight
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx!.drawImage(v, 0, 0, tempCanvas.width, tempCanvas.height);
+
+        // Now get the cropped face from that
+        const faceImage = tempCtx!.getImageData(xMin, yMin, width, height);
+
+        const croppedCanvas = croppedCanvasRef()
+        if (croppedCanvas) {
+          const croppedCtx = croppedCanvas.getContext('2d');
+          if (croppedCtx) {
+            // Clear and draw the cropped face
+            croppedCtx.clearRect(0, 0, 224, 224);
+            // Put the resized face in the new canvas
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = width;
+            tmpCanvas.height = height;
+            tmpCanvas.getContext('2d')!.putImageData(faceImage, 0, 0);
+            croppedCtx.drawImage(tmpCanvas, 0, 0, 224, 224);
+          }
+        }
 
         const tensor =  tf.tidy(() =>
           tf.browser.fromPixels(faceImage)
@@ -79,7 +102,6 @@ export default function MaskDetector() {
         // Predict
         const prediction = maskModel()!.predict(tensor) as tf.Tensor;
         const data = await prediction.data();
-        console.log(data)
 
         // Detemine Label
         const [maskProb, noMaskProb] = data;
@@ -132,6 +154,13 @@ export default function MaskDetector() {
         width="640"
         height="480"
         style="position: absolute; top: 0; left: 0;"
+      />
+      <canvas
+        ref={setCroppedCanvasRef}
+        id="cropped"
+        width="224"
+        height="224"
+        style="margin-left: 10px; border: 1px solid #ccc;"
       />
     </div>
   );
