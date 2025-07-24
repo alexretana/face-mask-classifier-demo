@@ -6,7 +6,6 @@ export default function MaskDetector() {
   const [videoRef, setVideoRef] = createSignal<HTMLVideoElement | null>(null);
   const [canvasRef, setCanvasRef] = createSignal<HTMLCanvasElement | null>(null);
   const [maskModel, setMaskModel] =createSignal<tf.LayersModel | null >(null);
-  const [croppedCanvasRef, setCroppedCanvasRef] = createSignal<HTMLCanvasElement | null>(null);
   let detector: faceLandmarksDetection.FaceLandmarksDetector | null = null;
   let running = true;
 
@@ -76,21 +75,6 @@ export default function MaskDetector() {
         // Now get the cropped face from that
         const faceImage = tempCtx!.getImageData(xMin, yMin, width, height);
 
-        const croppedCanvas = croppedCanvasRef()
-        if (croppedCanvas) {
-          const croppedCtx = croppedCanvas.getContext('2d');
-          if (croppedCtx) {
-            // Clear and draw the cropped face
-            croppedCtx.clearRect(0, 0, 224, 224);
-            // Put the resized face in the new canvas
-            const tmpCanvas = document.createElement('canvas');
-            tmpCanvas.width = width;
-            tmpCanvas.height = height;
-            tmpCanvas.getContext('2d')!.putImageData(faceImage, 0, 0);
-            croppedCtx.drawImage(tmpCanvas, 0, 0, 224, 224);
-          }
-        }
-
         const mean = tf.tensor1d([123.68, 116.779, 103.939]) // Hard coded average used in training
 
         const tensor =  tf.tidy(() =>
@@ -156,13 +140,6 @@ export default function MaskDetector() {
         width="640"
         height="480"
         style="position: absolute; top: 0; left: 0;"
-      />
-      <canvas
-        ref={setCroppedCanvasRef}
-        id="cropped"
-        width="224"
-        height="224"
-        style="margin-left: 10px; border: 1px solid #ccc;"
       />
     </div>
   );
