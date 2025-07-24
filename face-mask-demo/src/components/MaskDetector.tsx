@@ -91,11 +91,13 @@ export default function MaskDetector() {
           }
         }
 
+        const mean = tf.tensor1d([123.68, 116.779, 103.939]) // Hard coded average used in training
+
         const tensor =  tf.tidy(() =>
           tf.browser.fromPixels(faceImage)
             .resizeNearestNeighbor([224, 224])
             .toFloat()
-            .div(255.0)
+            .sub(mean)
             .expandDims(0) // shape [1, 224, 224, 3]
         );
 
