@@ -7,7 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-./fask-mask-demo/node_modules
+fask-mask-demo/node_modules
 dist
 dist-ssr
 *.local
