@@ -27,3 +27,4 @@ face-mask-demo/public/face-mask-classifier-tfjs-model/group1-shard13of27.bin fil
 face-mask-demo/public/face-mask-classifier-tfjs-model/group1-shard23of27.bin filter=lfs diff=lfs merge=lfs -text
 face-mask-demo/public/face-mask-classifier-tfjs-model/group1-shard20of27.bin filter=lfs diff=lfs merge=lfs -text
 face-mask-demo/public/face-mask-classifier-tfjs-model/model.json filter=lfs diff=lfs merge=lfs -text
+canvas-model-lambda-function/model.ckpt filter=lfs diff=lfs merge=lfs -text
