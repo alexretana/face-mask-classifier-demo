@@ -26,9 +26,9 @@ dist-ssr
 # Terraform
 *.tfstate
 *.tfstate.*
-./face-mask-demo-iac/.terraform/
-./face-mask-demo-iac/.terraform.lock.hcl
-./face-mask-demo-iac/crash.log
+/face-mask-demo-iac/.terraform/
+/face-mask-demo-iac/.terraform.lock.hcl
+/face-mask-demo-iac/crash.log
 *.tfvars
 ./face-mask-demo-iac/override.tf
 ./face-mask-demo-iac/override.tf.json
