@@ -1,0 +1,37 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+./fask-mask-demo/node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Terraform
+*.tfstate
+*.tfstate.*
+./face-mask-demo-iac/.terraform/
+./face-mask-demo-iac/.terraform.lock.hcl
+./face-mask-demo-iac/crash.log
+*.tfvars
+./face-mask-demo-iac/override.tf
+./face-mask-demo-iac/override.tf.json
+*_override.tf
+*_override.tf.json
+./face-mask-demo-iac/terraform.tfvars
