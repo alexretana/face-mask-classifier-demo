@@ -1,0 +1,44 @@
+name: Deploy React app to S3 + CloudFront
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write    # needed for OIDC
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: face-mask-demo
+
+    - name: Build app
+      run: npm run build
+      working-directory: face-mask-demo
+
+    - name: Configure AWS credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::022185952056:role/github-actions-deploy
+        aws-region: us-east-1
+
+    - name: Deploy to S3
+      run: aws s3 sync build/ s3://face-mask-classifier-retanatech-demo --delete
+      working-directory: face-mask-demo
+
+    - name: Invalidate CloudFront cache
+      run: aws cloudfront create-invalidation --distribution-id E12QON4WKATNXJ --paths "/*"
