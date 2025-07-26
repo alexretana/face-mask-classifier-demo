@@ -43,6 +43,11 @@ resource "aws_iam_role_policy" "github_actions_policy" {
 			},
 			{
 				Effect = "Allow"
+				Action = ["s3:ListBucket"]
+				Resource = "${aws_s3_bucket.website_bucket.arn}"
+			},
+			{
+				Effect = "Allow"
 				Action = ["cloudfront:CreateInvalidation"]
 				Resource = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.website_cdn.id}"
 			}
