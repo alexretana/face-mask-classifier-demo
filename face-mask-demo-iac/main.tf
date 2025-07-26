@@ -1,7 +1,47 @@
 ########################################
+### Route53 zone
+########################################
+data "aws_route53_zone" "retanatech_com" {
+	name = "retanatech.com"
+}
+
+########################################
+### ACM certificate & DNS validation
+########################################
+resource "aws_acm_certificate" "demo_cert" {
+	domain_name = "face-mask-classifier-demo.retanatech.com"
+	validation_method = "DNS"
+
+	tags = {
+		Name = "Face Mask Classifier Demo Cert"
+	}
+}
+
+resource "aws_route53_record" "demo_cert_validation" {
+	for_each = {
+		for dvo in aws_acm_certificate.demo_cert.domain_validation_options : dvo.domain_name => {
+			name = dvo.resource_record_name
+			type = dvo.resource_record_type
+			record = dvo.resource_record_value
+		}
+	}
+
+	zone_id = data.aws_route53_zone.retanatech_com.zone_id
+	name = each.value.name
+	type = each.value.type
+	ttl = 300
+	records = [each.value.record]
+}
+
+# Wait for validation
+resource "aws_acm_certificate_validation" "demo_cert_validation" {
+	certificate_arn = aws_acm_certificate.demo_cert.arn
+	validation_record_fqdns = [for record in aws_route53_record.demo_cert_validation : record.fqdn]
+}
+
+########################################
 ### S3 Bucket and bucket policies
 ########################################
-
 resource "aws_s3_bucket" "website_bucket" {
 	bucket = var.bucket_name
 
@@ -55,9 +95,8 @@ resource "aws_s3_bucket_policy" "public_read" {
 }
 
 ########################################
-### S3 Bucket and bucket policies
+### CloudFront & OAC
 ########################################
-
 resource "aws_cloudfront_origin_access_control" "s3_oac" {
 	name = "face-mask-classifier-demo-oac"
 	description = "OAC for S3 bucket"
@@ -69,6 +108,8 @@ resource "aws_cloudfront_origin_access_control" "s3_oac" {
 resource "aws_cloudfront_distribution" "website_cdn" {
 	enabled = true
 	default_root_object = "index.html"
+
+	depends_on = [aws_acm_certificate_validation.demo_cert_validation]
 
 	origin {
 		domain_name = aws_s3_bucket.website_bucket.bucket_regional_domain_name
@@ -91,8 +132,11 @@ resource "aws_cloudfront_distribution" "website_cdn" {
 		}
 	}
 
+	aliases = ["face-mask-classifier-demo.retanatech.com"]
+
 	viewer_certificate {
-		cloudfront_default_certificate = true
+		acm_certificate_arn = aws_acm_certificate.demo_cert.arn
+		ssl_support_method = "sni-only"
 		minimum_protocol_version = "TLSv1.2_2021"
 	}
 
@@ -106,5 +150,20 @@ resource "aws_cloudfront_distribution" "website_cdn" {
 
 	tags = {
 		Name = "Face Mask Demo CDN"
+	}
+}
+
+########################################
+### Route53 alias record
+########################################
+resource "aws_route53_record" "demo_alias" {
+	zone_id = data.aws_route53_zone.retanatech_com.zone_id
+	name = "face-mask-classifier-demo"
+	type = "A"
+
+	alias {
+		name = aws_cloudfront_distribution.website_cdn.domain_name
+		zone_id = aws_cloudfront_distribution.website_cdn.hosted_zone_id
+		evaluate_target_health = false
 	}
 }
