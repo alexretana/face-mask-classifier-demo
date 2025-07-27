@@ -3,11 +3,16 @@ import { Motion } from 'solid-motionone';
 import MaskDetector from './components/MaskDetector';
 import './index.css';
 
+// Define the possible states
+type AppState =
+  | 'idle'                    // waiting for user to click "Enable Webcam"
+  | 'startingWebcam'          // permission given, waiting for webcam
+  | 'loadingModel'            // webcam ready, loading model
+  | 'ready'                   // model loaded
+  | 'showDetails'          // user clicked learn
+
 export default function App() {
-  const [hasPermission, setHasPermission] = createSignal(false)
-  const [isWebcamReady, setIsWebcamReady] = createSignal(false)
-  const [isModelLoaded, setIsModelLoaded] = createSignal(false)
-  const [showDetails, setShowDetails] = createSignal(false)
+  const [state, setState] = createSignal<AppState>('idle')
 
   return (
     <div class="flex flex-col items-center justify-center min-h-screen bg-base-100 text-base-content space-y-6">
@@ -19,51 +24,33 @@ export default function App() {
         Face Mask Demo
       </Motion.h1>
 
-      <Show when={!hasPermission()}>
+      {/* Idle state: ask user to enable websam */}
+      <Show when={state() === 'idle'}>
         <Motion.button
           animate={{ opacity: [0, 1] }}
           transition={{ duration: 1 }}
           class="btn btn-primary"
-          onClick={() => setHasPermission(true)}
+          onClick={() => setState('startingWebcam')}
         >
           Enable Webcam
         </Motion.button>
         <p class="text-sm text-warning">* Please allow camera permissions</p>
       </Show>
 
-      <Show when={hasPermission()}>
+
+      {/* After pemission is given, always render MaskDetector */}
+      <Show when={state() !== 'idle'}>
         <Motion.div 
-          animate={{ opacity: [0, 1] }} 
+          animate={{ opacity: [0, 1] }}
           transition={{ duration: 1 }}
+          class="flex flex-row items-start mt-4 gap-6"
         >
-          {!isWebcamReady() && (
-            <div class="flex flex-col items-center space-y-2">
-              <span class="loading loading-spinner loading-lg"></span>
-              <p>Starting webcam</p>
-            </div>
-          )}
-
-          <Show when={isModelLoaded()}>
-            <p class="text-success">Model successfully loaded!</p>
-            <Motion.button
-              animate={{ opacity: [0, 1] }}
-              transition={{ duration: 1 }}
-              class="btn btn-secondary mt-4"
-              onClick={() => setShowDetails(true)}
-            >
-              Learn about the implementation
-            </Motion.button>
-          </Show>
-        </Motion.div>
-      </Show>
-
-      <Show when={hasPermission()}>
-        <div class="flex flex-col md:flex-row md:space-x-4 items-start mt-4">
           <MaskDetector
-            onWebcamReady={() => setIsWebcamReady(true)}
-            onModelLoaded={() => setIsModelLoaded(true)}
+            onWebcamReady={() => setState('loadingModel')}
+            onModelLoaded={() => setState('ready')}
           />
-          <Show when={showDetails()}>
+          {/* ShowDetails state: about section */}
+          <Show when={state() === 'showDetails'}>
             <Motion.div
               animate={{ opacity: [0, 1] }}
               transition={{ duration: 1 }}
@@ -76,7 +63,35 @@ export default function App() {
               </p>
             </Motion.div>
           </Show>
-        </div>
+        </Motion.div>
+
+        {/* Show spinners based on state */}
+        <Show when={state() === 'startingWebcam'}>
+          <div class="flex flex-col items-center justify-center space-y-2">
+            <span class="loading loading-spinner loading-lg"></span>
+            <p>Starting webcam...</p>
+          </div>
+        </Show>
+
+        <Show when={state() === 'loadingModel'}>
+          <div class="flex flex-col items-center space-y-2">
+            <span class="loading loading-spinner loading-lg"></span>
+            <p>Loading face-mask-classifer model...</p>
+          </div>
+        </Show>
+
+        {/* Ready state: show message and button */}
+        <Show when={state() === 'ready'}>
+          <p class="text-success">Model successfully loaded!</p>
+          <Motion.button
+            animate={{ opacity: [0, 1] }}
+            transition={{ duration: 1 }}
+            class="btn btn-secondary mt-4"
+            onClick={() => setState('showDetails')}
+          >
+            Learn about the implementation
+          </Motion.button>
+        </Show>
       </Show>
     </div>
   )

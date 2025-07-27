@@ -16,17 +16,6 @@ export default function MaskDetector(props: {
     await tf.setBackend('webgl');
     await tf.ready();
 
-    // Load mask classifier model
-    const model = await tf.loadLayersModel('face-mask-classifier-tfjs-model/model.json')
-    setMaskModel(model);
-    props.onModelLoaded();
-
-    // Load th face detector model
-    detector = await faceLandmarksDetection.createDetector(
-      faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
-      { runtime: 'tfjs', maxFaces: 1, refineLandmarks: false}
-    );
-
     // Start webcam
     const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
     const video = videoRef();
@@ -42,6 +31,18 @@ export default function MaskDetector(props: {
     });
 
     props.onWebcamReady();
+
+    // Load mask classifier model
+    const model = await tf.loadLayersModel('face-mask-classifier-tfjs-model/model.json')
+    setMaskModel(model);
+
+    // Load th face detector model
+    detector = await faceLandmarksDetection.createDetector(
+      faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
+      { runtime: 'tfjs', maxFaces: 1, refineLandmarks: false}
+    );
+
+    props.onModelLoaded();
 
     // Stop webcam on cleanup
     onCleanup(() => {
