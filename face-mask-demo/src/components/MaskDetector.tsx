@@ -2,7 +2,10 @@ import { createSignal, onMount, onCleanup } from 'solid-js';
 import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
 import * as tf from '@tensorflow/tfjs';
 
-export default function MaskDetector() {
+export default function MaskDetector(props: {
+  onWebcamReady: () => void
+  onModelLoaded: () => void
+}) {
   const [videoRef, setVideoRef] = createSignal<HTMLVideoElement | null>(null);
   const [canvasRef, setCanvasRef] = createSignal<HTMLCanvasElement | null>(null);
   const [maskModel, setMaskModel] =createSignal<tf.LayersModel | null >(null);
@@ -16,6 +19,7 @@ export default function MaskDetector() {
     // Load mask classifier model
     const model = await tf.loadLayersModel('face-mask-classifier-tfjs-model/model.json')
     setMaskModel(model);
+    props.onModelLoaded();
 
     // Load th face detector model
     detector = await faceLandmarksDetection.createDetector(
@@ -36,6 +40,8 @@ export default function MaskDetector() {
         resolve();
       };
     });
+
+    props.onWebcamReady();
 
     // Stop webcam on cleanup
     onCleanup(() => {
@@ -131,7 +137,7 @@ export default function MaskDetector() {
   });
 
   return (
-    <div style="position: relative; display: inline-block; justify-content: center;">
+    <div class="relative inline-block">
       <video
         ref={setVideoRef}
         autoplay
@@ -139,13 +145,13 @@ export default function MaskDetector() {
         playsinline
         width="640"
         height="480"
-        style="top: 0; left: 0; transform: scaleX(-1);"
+        class="transform -scale-x-100"
       />
       <canvas
         ref={setCanvasRef}
         width="640"
         height="480"
-        style="position: absolute; top: 0; left: 0;"
+        class="absolute top-0 left-0"
       />
     </div>
   );
