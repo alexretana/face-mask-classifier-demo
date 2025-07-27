@@ -51,8 +51,21 @@ export default function MaskDetector() {
       const c = canvasRef();
       if (!v || !c) return;
 
+      // Create temp canvas to hold flipped frame
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = v.videoWidth;
+      tempCanvas.height = v.videoHeight;
+      const tempCtx = tempCanvas.getContext('2d');
+
+      // Flip horizontally on temp canvas
+      tempCtx!.save();
+      tempCtx!.translate(tempCanvas.width, 0);
+      tempCtx!.scale(-1, 1);
+      tempCtx!.drawImage(v, 0, 0, tempCanvas.width, tempCanvas.height)
+      tempCtx!.restore();
+
       // Run face detection
-      const faces = await detector.estimateFaces(v, { flipHorizontal: false });
+      const faces = await detector.estimateFaces(tempCanvas, { flipHorizontal: false });
       const ctx = c.getContext('2d');
       if (!ctx) return ;
       
@@ -65,13 +78,6 @@ export default function MaskDetector() {
           console.log('maskModel missing'); 
           return;   
         }
-        // Create a temp canvas to draw the video frame
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = v.videoWidth
-        tempCanvas.height = v.videoHeight
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCtx!.drawImage(v, 0, 0, tempCanvas.width, tempCanvas.height);
-
         // Now get the cropped face from that
         const faceImage = tempCtx!.getImageData(xMin, yMin, width, height);
 
@@ -133,7 +139,7 @@ export default function MaskDetector() {
         playsinline
         width="640"
         height="480"
-        style="top: 0; left: 0;"
+        style="top: 0; left: 0; transform: scaleX(-1);"
       />
       <canvas
         ref={setCanvasRef}
