@@ -1,5 +1,5 @@
 import { createSignal, Show } from 'solid-js';
-import { Motion, Presence } from 'solid-motionone';
+import { Motion } from 'solid-motionone';
 import { Transition } from "solid-transition-group";
 import { createAutoAnimate } from '@formkit/auto-animate/solid';
 import MaskDetector from './components/MaskDetector';
