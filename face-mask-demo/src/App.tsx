@@ -45,10 +45,26 @@ export default function App() {
           {/* ShowDetails state: about section */}
           <Show when={showDetails()}>
             <div class="grow max-w-md mt-4 md:mt-0">
-              <h2 class="text-xl font-semibold mb-2">About this demo</h2>
-              <p>
-                This demo uses a face landmark detector and a custom-trained mask
-                classifier model to detect masks in real time from your webcam.
+              <h2 class="text-xl font-bold mb-2">About This Demo</h2>
+              <div>
+                <h3 class="text-lg font-bold">Client-side machine learning with Tensorflow.js</h3>
+                <p class="m-1">
+                  This project showcases a real‑time face mask detector built entirely on the client side using <strong>TensorFlow.js</strong>.  
+                  It uses a <strong>custom-trained Keras model</strong> that is downloaded and run locally in your browser, ensuring low latency and full privacy.
+                </p>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold">Fast frontend with Solid.js</h3>
+                <p class="m-1">
+                  The user interface is built with <strong>Solid.js</strong>, a lightweight reactive JavaScript framework
+                  that helps deliver fast updates and a smooth experience.
+                </p>
+              </div>
+              <h3 class="text-lg font-bold">Infrastructure as Code + CI/CD</h3>
+              <p class="m-1">
+                For deployment, I used <strong>Terraform</strong> as Infrastructure‑as‑Code to provision and manage the
+                <strong> S3</strong> bucket and <strong>CloudFront</strong> distribution that serve this site.  
+                Continuous deployment is handled with a <strong>GitHub Actions</strong> workflow, so updates to the main branch automatically build and deploy.
               </p>
             </div>
           </Show>
