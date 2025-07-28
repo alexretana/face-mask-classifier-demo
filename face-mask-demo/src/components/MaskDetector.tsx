@@ -17,44 +17,55 @@ export default function MaskDetector(props: {
   onMount(async () => {
     await tf.setBackend('webgl');
     await tf.ready();
+    
+    // Start models loading ASAP
+    props.onModelsLoading();
+    const loadModelsPromise = (async () => {
+      const loadedMaskModel = await tf.loadLayersModel('face-mask-classifier-tfjs-model/model.json');
+      setMaskModel(loadedMaskModel);
 
-
-    props.onWebcamLoading();
+      // Load the face detector model
+      detector = await faceLandmarksDetection.createDetector(
+        faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
+        { runtime: 'tfjs', maxFaces: 1, refineLandmarks: false}
+      );
+    })();
 
     // Start webcam
-    const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
-    const video = videoRef();
-    if (!video) return;
-    video.srcObject = stream;
+    props.onWebcamLoading();
+    const startWebcamPromise = (async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+      const video = videoRef();
+      if (!video) return;
+      video.srcObject = stream;
 
-    // Wait until video starts playing
-    await new Promise<void>((resolve) => {
-      video.onloadedmetadata = () => {
-        video.play();
-        resolve();
-      };
-    });
+      // Wait until video starts playing
+      await new Promise<void>((resolve) => {
+        video.onloadedmetadata = () => {
+          video.play();
+          resolve();
+        };
+      });
 
-    props.onWebcamReady();
+      return stream;
+    })();
 
+    // Wait for models & webcam to be ready independently
+    loadModelsPromise.then(() => props.onModelsReady());
+    startWebcamPromise.then(() => props.onWebcamReady());
 
-    props.onModelsLoading();
-    // Load mask classifier model
-    const model = await tf.loadLayersModel('face-mask-classifier-tfjs-model/model.json')
-    setMaskModel(model);
-
-    // Load th face detector model
-    detector = await faceLandmarksDetection.createDetector(
-      faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
-      { runtime: 'tfjs', maxFaces: 1, refineLandmarks: false}
-    );
-
-    props.onModelsReady();
+    // Wait for both to complete before starting detection loop
+    const [_, stream] = await Promise.all([
+      loadModelsPromise,
+      startWebcamPromise
+    ]);
 
     // Stop webcam on cleanup
     onCleanup(() => {
       running = false;
-      stream.getTracks().forEach(t => t.stop());
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop())
+      }
     });
 
     // Create detection loop
