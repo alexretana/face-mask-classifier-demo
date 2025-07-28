@@ -1,5 +1,4 @@
 import { createSignal, Show } from 'solid-js';
-import { Motion } from 'solid-motionone';
 import { Transition } from "solid-transition-group";
 import { createAutoAnimate } from '@formkit/auto-animate/solid';
 import MaskDetector from './components/MaskDetector';
@@ -69,13 +68,7 @@ export default function App() {
               }}
             >
               <Show when={!showDetails()}>
-                <Motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20}}
-                  transition={{ duration: 1, easing: "ease-in-out"}}
-                  class="max-w-md mt-4 md:mt-0"
-                >
+                <div class="max-w-md mt-4 md:mt-0">
                   <h2 class="text-xl font-bold mb-2">About This Demo</h2>
                   <p class="max-w-md">
                     This demo uses your webcam to detect a single face and classify in real time whether you’re wearing a mask or not.  
@@ -118,17 +111,11 @@ export default function App() {
                         </button>
                       </div>
                     </Show>
-                </Motion.div>
+                </div>
               </Show>
 
               <Show when={showDetails()}>
-                <Motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20}}
-                  transition={{ duration: 1, easing: "ease-in-out"}}
-                  class="max-w-md mt-4 md:mt-0"
-                >
+                <div class="max-w-md mt-4 md:mt-0">
                   <h2 class="text-xl font-bold mb-2">About This Demo's Implementation</h2>
                   <div>
                     <h3 class="text-lg font-bold">Client-side machine learning with Tensorflow.js</h3>
@@ -150,7 +137,7 @@ export default function App() {
                     <strong> S3</strong> bucket and <strong>CloudFront</strong> distribution that serve this site.  
                     Continuous deployment is handled with a <strong>GitHub Actions</strong> workflow, so updates to the main branch automatically build and deploy.
                   </p>
-                </Motion.div>
+                </div>
               </Show>
             </Transition>
           </div>
