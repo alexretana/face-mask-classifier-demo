@@ -3,8 +3,10 @@ import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detec
 import * as tf from '@tensorflow/tfjs';
 
 export default function MaskDetector(props: {
+  onWebcamLoading: () => void
+  onModelsLoading: () => void
   onWebcamReady: () => void
-  onModelLoaded: () => void
+  onModelsReady: () => void
 }) {
   const [videoRef, setVideoRef] = createSignal<HTMLVideoElement | null>(null);
   const [canvasRef, setCanvasRef] = createSignal<HTMLCanvasElement | null>(null);
@@ -15,6 +17,9 @@ export default function MaskDetector(props: {
   onMount(async () => {
     await tf.setBackend('webgl');
     await tf.ready();
+
+
+    props.onWebcamLoading();
 
     // Start webcam
     const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
@@ -32,6 +37,8 @@ export default function MaskDetector(props: {
 
     props.onWebcamReady();
 
+
+    props.onModelsLoading();
     // Load mask classifier model
     const model = await tf.loadLayersModel('face-mask-classifier-tfjs-model/model.json')
     setMaskModel(model);
@@ -42,7 +49,7 @@ export default function MaskDetector(props: {
       { runtime: 'tfjs', maxFaces: 1, refineLandmarks: false}
     );
 
-    props.onModelLoaded();
+    props.onModelsReady();
 
     // Stop webcam on cleanup
     onCleanup(() => {
