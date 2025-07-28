@@ -20,8 +20,8 @@ export default function App() {
 
   return (
     <div ref={parent} class="flex flex-col items-center justify-center min-h-screen bg-base-100 text-base-content space-y-6">
-      <h1 class="text-3xl font-bold">
-        Face Mask Demo
+      <h1 class="text-5xl font-bold">
+        Face Mask Classifier Demo
       </h1>
 
       {/* Idle state: ask user to enable websam */}
